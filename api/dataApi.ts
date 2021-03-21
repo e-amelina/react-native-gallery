@@ -1,6 +1,6 @@
 import { PictureData } from "../interfaces/pictureData";
 
-export default async function getPhotos (page: number, limit: number): Promise<PictureData[]> {
+export default async function getPhotos (page: number, limit: number) {
 
     try {
         const response = await fetch(`https://jsonplaceholder.typicode.com/photos?_page=${page}&_limit=${limit}`);

@@ -1,34 +1,26 @@
 import React, { Component, useCallback, useEffect, useState } from 'react';
+import { NavigationContainer, StackActions } from '@react-navigation/native';
+import 'react-native-gesture-handler';
+
 import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, SafeAreaView, Dimensions, Modal, ActivityIndicator, FlatList } from 'react-native';
-import { PictureData } from './interfaces/pictureData';
+import { StateData } from './interfaces/stateData';
+import { GalleryComponentData } from './interfaces/galleryComponentData';
+
 import getPhotos from './api/dataApi';
-import { Photo } from './components/photo';
+import {Gallery} from './components/gallery'
 
 
-
-interface StateType {
-  isLoading: boolean,
-  isSelectedImage: boolean,
-  galleryData: PictureData[],
-  selectedImage?: PictureData,
-}
 
 const LIMIT = 20;
 
-const keyExtractor = (photo: PictureData) => photo.id.toString();
 
-// function choosePicture(id: number) : PictureData {
-//       return 
-//       this.setState({
-//         selectedImage: this.state.galleryData.filter(picture => picture.id === id)[0],
-//         isSelectedImage: true,
-//       })
-//     }
 
+
+export const GalleryContext = React.createContext<GalleryComponentData>({})
 
 export default class App extends Component{
 
-    state:StateType = {
+    state: StateData = {
       isLoading: true,
       isSelectedImage: false,
       galleryData : [],
@@ -83,56 +75,23 @@ export default class App extends Component{
 
     render() {
       return (
-        <>
-          {/* {isSelectedImage && 
-            <Modal style={styles.modal} animationType={'fade'} transparent={true} 
-                  onRequestClose={()=> {}} visible={isSelectedImage}>
-                  <View style={styles.modal}>
-                    <Text style={styles.imageName} onPress={() => {                    
-                      // this.setState({isSelectedImage: false})}}>
-                      Close
-                    </Text>
-                    <Text style={styles.imageName}>
-                      {/* {this.state?.selectedImage?.title}
-                    </Text>
-                    <Image style={styles.image} source={{
-                        // uri:this.state?.selectedImage?.url,
-                      }}>
-                    </Image>
-                  </View>
-                </Modal> */}
-          
-          <ScrollView >
-          <SafeAreaView style={styles.container}>
-          {this.state.isLoading ? (<ActivityIndicator size='large'></ActivityIndicator>) :
-          (
-            <FlatList 
-              data={this.state.galleryData}
-              keyExtractor={keyExtractor}
-              renderItem = {({item})=> (
-                <TouchableOpacity  
-                  style={styles.wrapImg}
-                  activeOpacity = { .5 } 
-                  onPress={() => {
-                      this.choosePicture(item.id);
-                  }}>
-                  <Image
-                  style={styles.image}
-                  source={{
-                      uri: item.thumbnailUrl
-                  }}
-                  />
-                </TouchableOpacity>
-              )}
-            />
-          )
-          }
-          </SafeAreaView> 
-        </ScrollView>    
-        </>
+        <NavigationContainer>
+          <GalleryContext.Provider value={{isLoading: this.state.isLoading, galleryData: this.state.galleryData, choosePicture: this.choosePicture}}>
+            <Stack.Navigator>
+              <Stack.Screen name="gallery" component={Gallery}/>
+            </Stack.Navigator>  
+          </GalleryContext.Provider>
+
+        </NavigationContainer>
       )
   }
 }
+
+import { createStackNavigator } from '@react-navigation/stack';
+
+
+
+const Stack = createStackNavigator();
 
 const styles = StyleSheet.create({
   wrapImg: {
