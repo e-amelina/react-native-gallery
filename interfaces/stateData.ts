@@ -5,4 +5,5 @@ export interface StateData {
     isSelectedImage: boolean,
     galleryData: PictureData[],
     selectedImage?: PictureData,
+    page: number,
   }
