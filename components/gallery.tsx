@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions, Image, TouchableOpacity, SafeAreaView, ActivityIndicator } from "react-native"
+import { StyleSheet, Dimensions, Image, TouchableOpacity, SafeAreaView, ActivityIndicator, View } from "react-native"
 import { FlatList, ScrollView } from "react-native-gesture-handler";
 import { GalleryContext } from "../App";
 import React from 'react';
@@ -6,32 +6,28 @@ import React from 'react';
 export function Gallery({navigation}: any) {
     return (
       <GalleryContext.Consumer> 
-        { ({isLoading, galleryData, loadPictures, page}) => 
-          <ScrollView>
-            <SafeAreaView style={styles.container}>
-          {isLoading ? (<ActivityIndicator size='large'></ActivityIndicator>) :
-          (
+        { ({galleryData, loadPictures}) => 
             <FlatList style={styles.container}
                 numColumns={2}
                 data={galleryData}
-                onEndReached = {() => {
+                onEndReached={()=> {
                     if(loadPictures) {
                         loadPictures();
                     }
                 }}
-                onEndReachedThreshold={0.25}
+                onEndReachedThreshold={0.2}
                 renderItem = {({item, index})=> (
                 <TouchableOpacity  
                   style={styles.wrapImg}
                   activeOpacity = { .5 } 
                   key={item.id.toString() + 'wrap'}
-                
                   onPress={() => {                      
                     navigation.navigate("modal", {
                         pictureTitle: item.title,
                         pictureUrl:item.url
                     })
                   }}>
+
                   <Image
                   style={styles.image}
                   key={item.id.toString() + 'image'}
@@ -43,12 +39,7 @@ export function Gallery({navigation}: any) {
                 </TouchableOpacity>
               )}
             />
-          )
-          }
-          </SafeAreaView> 
-          </ScrollView>
         }
-  
       </GalleryContext.Consumer>
       
     );

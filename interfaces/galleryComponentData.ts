@@ -1,8 +1,8 @@
 import { PictureData } from "./pictureData";
 
 export interface GalleryComponentData {
-    isLoading?: boolean,
+    // isLoading?: boolean,
     galleryData?: PictureData[],
     loadPictures?: Function | null,
-    page?:number
+    // page?: number,
   }

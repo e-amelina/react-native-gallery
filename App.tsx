@@ -1,5 +1,6 @@
 import React, { Component, useCallback, useEffect, useState } from 'react';
-import { NavigationContainer, StackActions } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import 'react-native-gesture-handler';
 
 import { StyleSheet, Dimensions } from 'react-native';
@@ -9,71 +10,62 @@ import { GalleryComponentData } from './interfaces/galleryComponentData';
 import getPhotos from './api/dataApi';
 import {Gallery} from './components/gallery';
 import {Modal} from './components/modal'
+import { PictureData } from './interfaces/pictureData';
 
-const LIMIT = 50;
 
 export const GalleryContext = React.createContext<GalleryComponentData>({});
 const RootStack = createStackNavigator();
+const LIMIT = 20;
+
+// loadPictures = () : void => {
+//   this.setState((state: StateData) => ( {page: state.page + 1} ));
+//   getPhotos(this.state.page, LIMIT).then(photos => {
+//     this.setState((state: StateData) =>   
+//        ({
+//         galleryData: state.galleryData.concat(photos),
+//         isLoading: false
+//        })           
+//     );
+//   })
+// }
 
 
-export default class App extends Component {
-  
-    state: StateData = {
-      isLoading: true,
-      isSelectedImage: false,
-      galleryData : [],
-      page: 0,
-    }
+export default function App() {
 
-    componentDidMount() {
-      getPhotos(this.state.page, LIMIT).then(photos => {
-        this.setState((state: StateData) =>   
-           ({
-            galleryData: state.galleryData.concat(photos),
-            isLoading: false
-           }));
-        })
-    }
+  const [galleryData, setData] = useState<PictureData[]>([]);
+  const [page, setPage] = useState(1);
 
-    loadPictures = () : void => {
-      this.setState((state: StateData) => ( {page: state.page + 1} ));
-      getPhotos(this.state.page, LIMIT).then(photos => {
-        this.setState((state: StateData) =>   
-           ({
-            galleryData: state.galleryData.concat(photos),
-            isLoading: false
-           })           
-        );
-      })
-    }
+    useEffect(() => {
+      getPhotos(page, LIMIT)
+      .then(photos => {
+        setData(galleryData.concat(photos));
+      })      
+    }, [page]);
 
-    render() {
+    const loadPicture = () => {
+      setPage(page + 1);   
+    };
+
       return (
         <NavigationContainer>
-          <GalleryContext.Provider 
+
+          {(galleryData && <GalleryContext.Provider 
             value={{
-                isLoading: this.state.isLoading, 
-                galleryData: this.state.galleryData,
-                loadPictures: this.loadPictures,
-                page: this.state.page
-              }}>
+                galleryData: galleryData,
+                loadPictures: loadPicture,
+              }}
+              >
             <RootStack.Navigator mode="modal">
+              {console.log(galleryData)}
               <RootStack.Screen name="gallery" component={Gallery} options={{ headerShown: false }}/>
               <RootStack.Screen name="modal" component={Modal} />
             </RootStack.Navigator>  
-          </GalleryContext.Provider>
+          </GalleryContext.Provider>)}
 
         </NavigationContainer>
       )
   }
-}
 
-import { createStackNavigator } from '@react-navigation/stack';
-import { PictureData } from './interfaces/pictureData';
-
-
-
-const Stack = createStackNavigator();
 
 const styles = StyleSheet.create({
   wrapImg: {
