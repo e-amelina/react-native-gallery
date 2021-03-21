@@ -2,84 +2,65 @@ import React, { Component, useCallback, useEffect, useState } from 'react';
 import { NavigationContainer, StackActions } from '@react-navigation/native';
 import 'react-native-gesture-handler';
 
-import { StyleSheet, Text, View, Image, TouchableOpacity, ScrollView, SafeAreaView, Dimensions, Modal, ActivityIndicator, FlatList } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import { StateData } from './interfaces/stateData';
 import { GalleryComponentData } from './interfaces/galleryComponentData';
 
 import getPhotos from './api/dataApi';
-import {Gallery} from './components/gallery'
+import {Gallery} from './components/gallery';
+import {Modal} from './components/modal'
+
+const LIMIT = 50;
+
+export const GalleryContext = React.createContext<GalleryComponentData>({});
+const RootStack = createStackNavigator();
 
 
-
-const LIMIT = 20;
-
-
-
-
-export const GalleryContext = React.createContext<GalleryComponentData>({})
-
-export default class App extends Component{
-
+export default class App extends Component {
+  
     state: StateData = {
       isLoading: true,
       isSelectedImage: false,
       galleryData : [],
+      page: 0,
     }
 
     componentDidMount() {
-      getPhotos(0, LIMIT).then(photos => {
-        this.setState({ 
-            galleryData: photos,
+      getPhotos(this.state.page, LIMIT).then(photos => {
+        this.setState((state: StateData) =>   
+           ({
+            galleryData: state.galleryData.concat(photos),
             isLoading: false
-          });
+           }));
+        })
+    }
+
+    loadPictures = () : void => {
+      this.setState((state: StateData) => ( {page: state.page + 1} ));
+      getPhotos(this.state.page, LIMIT).then(photos => {
+        this.setState((state: StateData) =>   
+           ({
+            galleryData: state.galleryData.concat(photos),
+            isLoading: false
+           })           
+        );
       })
     }
-
-    choosePicture(id: number) {
-      this.setState({
-        selectedImage: this.state.galleryData.filter(picture => picture.id === id)[0],
-        isSelectedImage: true,
-      });      
-    }
-    
-
-    // const [galleryData, setGalleryData] = useState<PictureData[]>([]);
-    // const [isLoading, setIsLoading] = useState(true);
-    // const [selectedImage, setImage] = useState<PictureData>();
-
-    // const choosePicture = useCallback((id: number) => {
-    //   setImage(galleryData.filter(photo => photo.id === id)[0]);
-    //   console.log(selectedImage);
-    //   console.log(galleryData);
-      
-    //   console.log(id);
-      
-      
-    // }, [])
-   
-
-    // useEffect(() =>  {
-    //   getPhotos(0, LIMIT).then(photos => {
-    //     console.log(photos);
-        
-    //     setGalleryData(photos);
-    //     console.log(galleryData);
-        
-    //     setIsLoading(false);
-    //     console.log(isLoading);
-        
-    //   });
-    // }, []);
-
-    
 
     render() {
       return (
         <NavigationContainer>
-          <GalleryContext.Provider value={{isLoading: this.state.isLoading, galleryData: this.state.galleryData, choosePicture: this.choosePicture}}>
-            <Stack.Navigator>
-              <Stack.Screen name="gallery" component={Gallery}/>
-            </Stack.Navigator>  
+          <GalleryContext.Provider 
+            value={{
+                isLoading: this.state.isLoading, 
+                galleryData: this.state.galleryData,
+                loadPictures: this.loadPictures,
+                page: this.state.page
+              }}>
+            <RootStack.Navigator mode="modal">
+              <RootStack.Screen name="gallery" component={Gallery} options={{ headerShown: false }}/>
+              <RootStack.Screen name="modal" component={Modal} />
+            </RootStack.Navigator>  
           </GalleryContext.Provider>
 
         </NavigationContainer>
@@ -88,6 +69,7 @@ export default class App extends Component{
 }
 
 import { createStackNavigator } from '@react-navigation/stack';
+import { PictureData } from './interfaces/pictureData';
 
 
 
